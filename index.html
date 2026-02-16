@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>weekend-sh</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0a;
+      color: #b0b0b0;
+      font-family: 'VT323', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Scanline effect */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.08) 2px,
+        rgba(0, 0, 0, 0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .terminal {
+      text-align: center;
+      max-width: 600px;
+      padding: 20px;
+    }
+
+    .header {
+      font-size: 14px;
+      color: #444;
+      margin-bottom: 32px;
+      letter-spacing: 2px;
+    }
+
+    .title {
+      font-size: 20px;
+      color: #666;
+      line-height: 1.8;
+      margin-bottom: 48px;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: #666;
+      vertical-align: middle;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .projects {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .project-link {
+      font-size: 16px;
+      color: #555;
+      text-decoration: none;
+      transition: color 0.2s;
+      letter-spacing: 1px;
+    }
+
+    .project-link:hover {
+      color: #aaa;
+    }
+
+    .project-link .arrow {
+      color: #333;
+      margin-right: 6px;
+    }
+
+    .project-link:hover .arrow {
+      color: #666;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      margin: 32px 0;
+      width: 200px;
+    }
+
+    .footer {
+      font-size: 12px;
+      color: #2a2a2a;
+      margin-top: 48px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal">
+    <div class="header">weekend-sh.com</div>
+
+    <div class="title">
+      directory for several vibe coded projects...<span class="cursor"></span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="projects">
+      <a href="/perf-review" class="project-link"><span class="arrow">&gt;</span> perf-review</a>
+    </div>
+
+    <div class="footer">built on weekends // 2025</div>
+  </div>
+</body>
+</html>

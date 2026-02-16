@@ -1,0 +1,11 @@
+# Project dirs (not part of the website)
+app/
+context/
+docs/
+output/
+templates/
+CLAUDE.md
+
+# System
+.DS_Store
+*.pdf

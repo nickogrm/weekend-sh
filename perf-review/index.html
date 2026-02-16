@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perf Review Generator</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Perf Review Generator</h1>
+      <p class="subtitle">Prepare ton contexte, copie dans Claude, genere ta review.</p>
+    </header>
+
+    <!-- Step 1: Documents -->
+    <section class="card" id="documents-section">
+      <div class="card-header">
+        <h2>1. Documents</h2>
+        <span class="badge" id="file-count">0 fichier(s)</span>
+      </div>
+
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-content">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Glisse tes fichiers ici ou <button type="button" class="link-btn" id="browse-btn">parcourir</button></p>
+          <span class="hint">PDF, TXT, MD, CSV, JSON</span>
+        </div>
+        <input type="file" id="file-input" multiple accept=".pdf,.txt,.md,.csv,.json" hidden>
+      </div>
+
+      <div class="file-list" id="file-list"></div>
+    </section>
+
+    <!-- Step 2: Extracted Context -->
+    <section class="card" id="context-section">
+      <div class="card-header">
+        <h2>2. Contexte extrait</h2>
+        <button type="button" class="btn btn-sm" id="clear-context-btn">Vider</button>
+      </div>
+      <p class="hint">Le texte extrait de tes documents. Tu peux l'editer manuellement.</p>
+      <textarea id="extracted-context" placeholder="Le contenu extrait de tes fichiers apparaitra ici..."></textarea>
+    </section>
+
+    <!-- Step 3: Q&A -->
+    <section class="card" id="qa-section">
+      <div class="card-header">
+        <h2>3. Questions / Reponses</h2>
+        <button type="button" class="btn btn-sm" id="reset-qa-btn">Reset</button>
+      </div>
+      <p class="hint">Remplis les questions de ta review. Elles sont sauvegardees automatiquement.</p>
+
+      <div class="qa-list" id="qa-list">
+        <div class="qa-item">
+          <label>Q1</label>
+          <input type="text" class="qa-question" data-index="0" placeholder="Question...">
+          <textarea class="qa-answer" data-index="0" placeholder="Ta reponse..."></textarea>
+        </div>
+        <div class="qa-item">
+          <label>Q2</label>
+          <input type="text" class="qa-question" data-index="1" placeholder="Question...">
+          <textarea class="qa-answer" data-index="1" placeholder="Ta reponse..."></textarea>
+        </div>
+        <div class="qa-item">
+          <label>Q3</label>
+          <input type="text" class="qa-question" data-index="2" placeholder="Question...">
+          <textarea class="qa-answer" data-index="2" placeholder="Ta reponse..."></textarea>
+        </div>
+        <div class="qa-item">
+          <label>Q4</label>
+          <input type="text" class="qa-question" data-index="3" placeholder="Question...">
+          <textarea class="qa-answer" data-index="3" placeholder="Ta reponse..."></textarea>
+        </div>
+        <div class="qa-item">
+          <label>Q5 <span class="optional">(optionnel)</span></label>
+          <input type="text" class="qa-question" data-index="4" placeholder="Question...">
+          <textarea class="qa-answer" data-index="4" placeholder="Ta reponse..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 4: Generate -->
+    <section class="card" id="generate-section">
+      <div class="card-header">
+        <h2>4. Generer le prompt</h2>
+      </div>
+
+      <div class="generate-options">
+        <div class="review-type-toggle">
+          <button type="button" class="toggle-btn active" data-type="mid-year">Mid-year</button>
+          <button type="button" class="toggle-btn" data-type="annual">Annual</button>
+        </div>
+
+        <div class="profile-fields">
+          <div class="field-row">
+            <div class="field">
+              <label>Prenom Nom</label>
+              <input type="text" id="profile-name" placeholder="Nicolas Gromer">
+            </div>
+            <div class="field">
+              <label>Role</label>
+              <input type="text" id="profile-role" placeholder="Growth Marketer">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Entreprise</label>
+              <input type="text" id="profile-company" placeholder="lemlist">
+            </div>
+            <div class="field">
+              <label>Manager</label>
+              <input type="text" id="profile-manager" placeholder="Erwan Gauthier">
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-lg" id="generate-btn">Generer le contexte pour Claude</button>
+      </div>
+
+      <div class="output-area hidden" id="output-area">
+        <div class="output-header">
+          <h3>Prompt genere</h3>
+          <button type="button" class="btn btn-sm btn-copy" id="copy-btn">Copier</button>
+        </div>
+        <pre id="output-text"></pre>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section class="card" id="history-section">
+      <div class="card-header">
+        <h2>Historique</h2>
+        <button type="button" class="btn btn-sm" id="clear-history-btn">Vider</button>
+      </div>
+      <div id="history-list" class="history-list">
+        <p class="empty-state">Aucune review generee pour le moment.</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
