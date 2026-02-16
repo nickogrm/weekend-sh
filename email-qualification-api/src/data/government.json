@@ -1,0 +1,336 @@
+{
+  "domains": [
+    "army.mil",
+    "canada.ca",
+    "cdc.gov",
+    "census.gov",
+    "cia.gov",
+    "cms.gov",
+    "congress.gov",
+    "cpsc.gov",
+    "customs.gov",
+    "defense.gov",
+    "dhs.gov",
+    "dod.mil",
+    "doe.gov",
+    "doi.gov",
+    "doj.gov",
+    "dol.gov",
+    "dot.gov",
+    "ed.gov",
+    "eea.europa.eu",
+    "eia.gov",
+    "epa.gov",
+    "europa.eu",
+    "faa.gov",
+    "fbi.gov",
+    "fcc.gov",
+    "fda.gov",
+    "fema.gov",
+    "frs.gov",
+    "ftc.gov",
+    "gc.ca",
+    "gob.ar",
+    "gob.cl",
+    "gob.es",
+    "gob.mx",
+    "gob.pe",
+    "gouv.bj",
+    "gouv.ci",
+    "gouv.fr",
+    "gouv.ml",
+    "gouv.sn",
+    "gov.ae",
+    "gov.ag",
+    "gov.al",
+    "gov.ar",
+    "gov.au",
+    "gov.bd",
+    "gov.bf",
+    "gov.bh",
+    "gov.bn",
+    "gov.br",
+    "gov.bs",
+    "gov.bw",
+    "gov.by",
+    "gov.bz",
+    "gov.cd",
+    "gov.cl",
+    "gov.cm",
+    "gov.cn",
+    "gov.co",
+    "gov.cy",
+    "gov.cz",
+    "gov.dz",
+    "gov.ec",
+    "gov.ee",
+    "gov.eg",
+    "gov.et",
+    "gov.fj",
+    "gov.ge",
+    "gov.gh",
+    "gov.gn",
+    "gov.gr",
+    "gov.gt",
+    "gov.gy",
+    "gov.hk",
+    "gov.hr",
+    "gov.hu",
+    "gov.ie",
+    "gov.il",
+    "gov.in",
+    "gov.iq",
+    "gov.ir",
+    "gov.it",
+    "gov.jm",
+    "gov.jo",
+    "gov.jp",
+    "gov.ke",
+    "gov.kg",
+    "gov.kh",
+    "gov.kw",
+    "gov.kz",
+    "gov.la",
+    "gov.lb",
+    "gov.lk",
+    "gov.lr",
+    "gov.lt",
+    "gov.lv",
+    "gov.ly",
+    "gov.ma",
+    "gov.mg",
+    "gov.mk",
+    "gov.ml",
+    "gov.mm",
+    "gov.mn",
+    "gov.mo",
+    "gov.mt",
+    "gov.mu",
+    "gov.mv",
+    "gov.mw",
+    "gov.mx",
+    "gov.my",
+    "gov.mz",
+    "gov.na",
+    "gov.ng",
+    "gov.np",
+    "gov.nr",
+    "gov.nz",
+    "gov.om",
+    "gov.pa",
+    "gov.pe",
+    "gov.pg",
+    "gov.ph",
+    "gov.pk",
+    "gov.pl",
+    "gov.pr",
+    "gov.ps",
+    "gov.pt",
+    "gov.py",
+    "gov.qa",
+    "gov.ro",
+    "gov.rs",
+    "gov.ru",
+    "gov.rw",
+    "gov.sa",
+    "gov.sb",
+    "gov.sc",
+    "gov.sd",
+    "gov.sg",
+    "gov.si",
+    "gov.sk",
+    "gov.sl",
+    "gov.sn",
+    "gov.so",
+    "gov.ss",
+    "gov.sv",
+    "gov.sy",
+    "gov.tj",
+    "gov.tl",
+    "gov.tm",
+    "gov.tn",
+    "gov.to",
+    "gov.tr",
+    "gov.tt",
+    "gov.tw",
+    "gov.tz",
+    "gov.ua",
+    "gov.ug",
+    "gov.uk",
+    "gov.uy",
+    "gov.uz",
+    "gov.ve",
+    "gov.vn",
+    "gov.ws",
+    "gov.za",
+    "gov.zm",
+    "gov.zw",
+    "governo.it",
+    "gsa.gov",
+    "hhs.gov",
+    "house.gov",
+    "hud.gov",
+    "ice.gov",
+    "irs.gov",
+    "mail.mil",
+    "medicare.gov",
+    "nasa.gov",
+    "navy.mil",
+    "nih.gov",
+    "nist.gov",
+    "noaa.gov",
+    "nrc.gov",
+    "nsa.gov",
+    "opm.gov",
+    "ssa.gov",
+    "state.gov",
+    "treasury.gov",
+    "un.org",
+    "usaid.gov",
+    "usda.gov",
+    "usdoj.gov",
+    "usgs.gov",
+    "usps.gov",
+    "ustreas.gov",
+    "va.gov",
+    "whitehouse.gov"
+  ],
+  "patterns": [
+    {
+      "pattern": ".admin.ch (Switzerland)",
+      "regex": "\\.admin\\.ch$"
+    },
+    {
+      "pattern": ".belgium.be (Belgium)",
+      "regex": "\\.belgium\\.be$"
+    },
+    {
+      "pattern": ".bund.de (Germany Federal)",
+      "regex": "\\.bund\\.de$"
+    },
+    {
+      "pattern": ".europa.eu (European Union)",
+      "regex": "\\.europa\\.eu$"
+    },
+    {
+      "pattern": ".fed.us (US Federal)",
+      "regex": "\\.fed\\.us$"
+    },
+    {
+      "pattern": ".gc.ca (Canada)",
+      "regex": "\\.gc\\.ca$"
+    },
+    {
+      "pattern": ".go.id (Indonesia)",
+      "regex": "\\.go\\.id$"
+    },
+    {
+      "pattern": ".go.jp (Japan)",
+      "regex": "\\.go\\.jp$"
+    },
+    {
+      "pattern": ".go.ke (Kenya)",
+      "regex": "\\.go\\.ke$"
+    },
+    {
+      "pattern": ".go.kr (South Korea)",
+      "regex": "\\.go\\.kr$"
+    },
+    {
+      "pattern": ".go.th (Thailand)",
+      "regex": "\\.go\\.th$"
+    },
+    {
+      "pattern": ".go.tz (Tanzania)",
+      "regex": "\\.go\\.tz$"
+    },
+    {
+      "pattern": ".go.ug (Uganda)",
+      "regex": "\\.go\\.ug$"
+    },
+    {
+      "pattern": ".gob.xx (Spanish-speaking)",
+      "regex": "\\.gob\\.[a-z]{2}$"
+    },
+    {
+      "pattern": ".gouv.xx (French-speaking)",
+      "regex": "\\.gouv\\.[a-z]{2}$"
+    },
+    {
+      "pattern": ".gov",
+      "regex": "\\.gov$"
+    },
+    {
+      "pattern": ".gov.ng (Nigeria)",
+      "regex": "\\.gov\\.ng$"
+    },
+    {
+      "pattern": ".gov.xx (country-specific)",
+      "regex": "\\.gov\\.[a-z]{2}$"
+    },
+    {
+      "pattern": ".government.nl (Netherlands)",
+      "regex": "\\.government\\.nl$"
+    },
+    {
+      "pattern": ".governo.it (Italy)",
+      "regex": "\\.governo\\.it$"
+    },
+    {
+      "pattern": ".govt.nz (New Zealand)",
+      "regex": "\\.govt\\.nz$"
+    },
+    {
+      "pattern": ".gv.at (Austria)",
+      "regex": "\\.gv\\.at$"
+    },
+    {
+      "pattern": ".mil (US Military)",
+      "regex": "\\.mil$"
+    },
+    {
+      "pattern": ".mil.xx (country military)",
+      "regex": "\\.mil\\.[a-z]{2}$"
+    },
+    {
+      "pattern": ".mod.uk (UK Ministry of Defence)",
+      "regex": "\\.mod\\.uk$"
+    },
+    {
+      "pattern": ".nhs.uk (UK Health)",
+      "regex": "\\.nhs\\.uk$"
+    },
+    {
+      "pattern": ".nic.in (India)",
+      "regex": "\\.nic\\.in$"
+    },
+    {
+      "pattern": ".overheid.nl (Netherlands)",
+      "regex": "\\.overheid\\.nl$"
+    },
+    {
+      "pattern": ".parliament.uk (UK Parliament)",
+      "regex": "\\.parliament\\.uk$"
+    },
+    {
+      "pattern": ".police.uk (UK Police)",
+      "regex": "\\.police\\.uk$"
+    },
+    {
+      "pattern": ".regeringen.se (Sweden)",
+      "regex": "\\.regeringen\\.se$"
+    },
+    {
+      "pattern": ".rijksoverheid.nl (Netherlands)",
+      "regex": "\\.rijksoverheid\\.nl$"
+    },
+    {
+      "pattern": ".service.gov.uk (UK Digital Services)",
+      "regex": "\\.service\\.gov\\.uk$"
+    },
+    {
+      "pattern": ".state.xx.us (US State)",
+      "regex": "\\.state\\.[a-z]{2}\\.us$"
+    }
+  ]
+}

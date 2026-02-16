@@ -1,47 +1,68 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { ApiKeyInfo } from '../types/index.js';
+import { getRedis } from '../lib/redis.js';
 
-// In-memory rate limit tracking (use Redis in production for multi-instance)
+// In-memory fallback when Redis is unavailable
 interface RateLimitEntry {
   count: number;
   resetAt: number;
 }
 
 const rateLimitStore = new Map<string, RateLimitEntry>();
-
-// IP-based rate limiting for unauthenticated requests
 const ipRateLimitStore = new Map<string, RateLimitEntry>();
 
-const WINDOW_MS = 60_000; // 1 minute
-const IP_LIMIT_PER_MINUTE = 20; // Low limit for unauthenticated requests
+const WINDOW_MS = 60_000;
+const WINDOW_SECONDS = 60;
+const IP_LIMIT_PER_MINUTE = 20;
 
 /**
- * Get or create rate limit entry
+ * Check rate limit using Redis (with in-memory fallback)
  */
-function getEntry(store: Map<string, RateLimitEntry>, key: string): RateLimitEntry {
+async function checkLimit(key: string, limit: number): Promise<{
+  allowed: boolean;
+  remaining: number;
+  resetAt: number;
+}> {
+  const redis = getRedis();
+
+  if (redis) {
+    try {
+      const redisKey = `rl:${key}`;
+      const count = await redis.incr(redisKey);
+
+      if (count === 1) {
+        await redis.expire(redisKey, WINDOW_SECONDS);
+      }
+
+      const ttl = await redis.ttl(redisKey);
+      const resetAt = Date.now() + (ttl > 0 ? ttl * 1000 : WINDOW_MS);
+
+      return {
+        allowed: count <= limit,
+        remaining: Math.max(0, limit - count),
+        resetAt,
+      };
+    } catch {
+      // Fallback to in-memory on Redis error
+    }
+  }
+
+  return checkLimitMemory(rateLimitStore, key, limit);
+}
+
+function checkLimitMemory(
+  store: Map<string, RateLimitEntry>,
+  key: string,
+  limit: number
+): { allowed: boolean; remaining: number; resetAt: number } {
   const now = Date.now();
   let entry = store.get(key);
 
   if (!entry || now > entry.resetAt) {
-    entry = {
-      count: 0,
-      resetAt: now + WINDOW_MS,
-    };
+    entry = { count: 0, resetAt: now + WINDOW_MS };
     store.set(key, entry);
   }
 
-  return entry;
-}
-
-/**
- * Increment request count and check if limit exceeded
- */
-function checkLimit(store: Map<string, RateLimitEntry>, key: string, limit: number): {
-  allowed: boolean;
-  remaining: number;
-  resetAt: number;
-} {
-  const entry = getEntry(store, key);
   entry.count++;
 
   return {
@@ -83,9 +104,8 @@ export async function rateLimitHook(
   // If authenticated, use API key rate limits
   if (keyInfo) {
     const keyLimit = keyInfo.rate_limit_per_minute;
-    const keyResult = checkLimit(rateLimitStore, keyInfo.client_id, keyLimit);
+    const keyResult = await checkLimit(`key:${keyInfo.client_id}`, keyLimit);
 
-    // Set rate limit headers
     reply.header('X-RateLimit-Limit', keyLimit);
     reply.header('X-RateLimit-Remaining', keyResult.remaining);
     reply.header('X-RateLimit-Reset', Math.ceil(keyResult.resetAt / 1000));
@@ -98,7 +118,7 @@ export async function rateLimitHook(
           message: 'Rate limit exceeded',
           details: {
             limit: keyLimit,
-            window_seconds: 60,
+            window_seconds: WINDOW_SECONDS,
             retry_after: Math.ceil((keyResult.resetAt - Date.now()) / 1000),
           },
         },
@@ -110,8 +130,7 @@ export async function rateLimitHook(
     }
   }
 
-  // Always apply IP-based rate limit as additional protection
-  const ipResult = checkLimit(ipRateLimitStore, clientIp, IP_LIMIT_PER_MINUTE);
+  const ipResult = await checkLimit(`ip:${clientIp}`, IP_LIMIT_PER_MINUTE);
 
   if (!ipResult.allowed) {
     reply.header('Retry-After', Math.ceil((ipResult.resetAt - Date.now()) / 1000));

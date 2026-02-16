@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { getListVersions } from '../services/listMatcher.js';
+import { isRedisHealthy, isRedisConnected } from '../lib/redis.js';
 
 const startTime = Date.now();
 
@@ -15,7 +16,7 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
 
   // GET /health/ready - Readiness check
   fastify.get('/health/ready', async (_request, reply) => {
-    const checks: Record<string, 'ok' | 'error'> = {
+    const checks: Record<string, 'ok' | 'error' | 'degraded'> = {
       lists_loaded: 'ok',
     };
 
@@ -25,10 +26,10 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
       checks.lists_loaded = 'error';
     }
 
-    // TODO: Add Redis check when Redis is integrated
-    // checks.redis = await checkRedis() ? 'ok' : 'error';
+    // Redis check (degraded mode is acceptable)
+    checks.redis = await isRedisHealthy() ? 'ok' : 'degraded';
 
-    const allOk = Object.values(checks).every(v => v === 'ok');
+    const allOk = Object.values(checks).every(v => v === 'ok' || v === 'degraded');
 
     if (!allOk) {
       reply.status(503);

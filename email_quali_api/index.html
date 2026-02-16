@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>email qualification api // weekend-sh</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0a;
+      color: #b0b0b0;
+      font-family: 'VT323', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .container {
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .back {
+      font-size: 14px;
+      color: #444;
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .back:hover { color: #888; }
+
+    h1 {
+      font-size: 22px;
+      color: #666;
+      margin: 32px 0 8px;
+      font-weight: normal;
+    }
+
+    .tagline {
+      font-size: 16px;
+      color: #444;
+      margin-bottom: 32px;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: #666;
+      vertical-align: middle;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 0%,100% { opacity:1 } 50% { opacity:0 } }
+
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      margin: 24px 0;
+    }
+
+    h2 {
+      font-size: 16px;
+      color: #555;
+      font-weight: normal;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+
+    p, li {
+      font-size: 15px;
+      color: #444;
+      line-height: 1.6;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul li::before {
+      content: '> ';
+      color: #333;
+    }
+
+    .endpoint {
+      background: #111;
+      border: 1px solid #1a1a1a;
+      padding: 16px;
+      margin: 12px 0;
+    }
+
+    .method {
+      color: #5a8a5a;
+      font-size: 14px;
+    }
+
+    .path {
+      color: #777;
+      font-size: 16px;
+      margin-left: 8px;
+    }
+
+    .desc {
+      color: #444;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .code-block {
+      background: #111;
+      border: 1px solid #1a1a1a;
+      padding: 16px;
+      margin: 12px 0;
+      overflow-x: auto;
+      white-space: pre;
+      font-size: 14px;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .key { color: #5a7a8a; }
+    .str { color: #8a7a5a; }
+    .bool { color: #5a8a5a; }
+    .num { color: #8a5a5a; }
+
+    .verdicts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .verdict-tag {
+      background: #111;
+      border: 1px solid #222;
+      padding: 4px 10px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .stack-tag {
+      background: #0d0d0d;
+      border: 1px solid #1a1a1a;
+      padding: 4px 10px;
+      font-size: 13px;
+      color: #444;
+    }
+
+    .github-link {
+      display: inline-block;
+      margin-top: 24px;
+      color: #555;
+      text-decoration: none;
+      font-size: 16px;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .github-link:hover { color: #aaa; }
+
+    .footer {
+      font-size: 12px;
+      color: #2a2a2a;
+      margin-top: 48px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back">&lt; back to directory</a>
+
+    <h1>email qualification api<span class="cursor"></span></h1>
+    <p class="tagline">classify any email as b2b, personal, education, government, or disposable</p>
+
+    <hr>
+
+    <h2>// what it does</h2>
+    <p>send an email address, get back a verdict with confidence score. handles batch requests too. built for lead qualification pipelines.</p>
+
+    <hr>
+
+    <h2>// verdicts</h2>
+    <div class="verdicts">
+      <span class="verdict-tag">private_b2b</span>
+      <span class="verdict-tag">personal</span>
+      <span class="verdict-tag">education</span>
+      <span class="verdict-tag">government</span>
+      <span class="verdict-tag">disposable</span>
+      <span class="verdict-tag">unknown</span>
+    </div>
+
+    <hr>
+
+    <h2>// endpoints</h2>
+
+    <div class="endpoint">
+      <span class="method">POST</span><span class="path">/v1/qualify-email</span>
+      <div class="desc">classify a single email address</div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method">POST</span><span class="path">/v1/qualify-email/batch</span>
+      <div class="desc">classify up to 50 emails at once</div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method">GET</span><span class="path">/health</span>
+      <div class="desc">health check + redis status</div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method">GET</span><span class="path">/docs</span>
+      <div class="desc">swagger ui documentation</div>
+    </div>
+
+    <hr>
+
+    <h2>// example request</h2>
+    <div class="code-block">curl -X POST http://localhost:3000/v1/qualify-email \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key" \
+  -d '{"email": "ceo@acmecorp.com"}'</div>
+
+    <h2>// example response</h2>
+    <div class="code-block">{
+  <span class="key">"email"</span>: <span class="str">"ceo@acmecorp.com"</span>,
+  <span class="key">"verdict"</span>: <span class="str">"private_b2b"</span>,
+  <span class="key">"confidence"</span>: <span class="num">0.85</span>,
+  <span class="key">"is_business_email"</span>: <span class="bool">true</span>,
+  <span class="key">"is_private_b2b"</span>: <span class="bool">true</span>,
+  <span class="key">"domain"</span>: <span class="str">"acmecorp.com"</span>,
+  <span class="key">"flags"</span>: [],
+  <span class="key">"checks"</span>: {
+    <span class="key">"syntax_valid"</span>: <span class="bool">true</span>,
+    <span class="key">"has_mx_record"</span>: <span class="bool">true</span>,
+    <span class="key">"is_disposable"</span>: <span class="bool">false</span>,
+    <span class="key">"is_free_provider"</span>: <span class="bool">false</span>
+  }
+}</div>
+
+    <hr>
+
+    <h2>// stack</h2>
+    <div class="stack">
+      <span class="stack-tag">typescript</span>
+      <span class="stack-tag">fastify</span>
+      <span class="stack-tag">redis</span>
+      <span class="stack-tag">vitest</span>
+      <span class="stack-tag">zod</span>
+      <span class="stack-tag">psl</span>
+    </div>
+
+    <hr>
+
+    <h2>// features</h2>
+    <ul>
+      <li>1500+ domain lists (personal, disposable, edu, gov)</li>
+      <li>mx record validation with redis caching</li>
+      <li>redis-backed rate limiting with in-memory fallback</li>
+      <li>api key authentication</li>
+      <li>swagger ui documentation</li>
+      <li>batch endpoint (up to 50 emails)</li>
+      <li>171 passing tests</li>
+    </ul>
+
+    <hr>
+
+    <a href="https://github.com/nickogrm/email-qualification-api" class="github-link">&gt; view source on github</a>
+
+    <div class="footer">weekend-sh // 2026</div>
+  </div>
+</body>
+</html>

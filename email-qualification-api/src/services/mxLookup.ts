@@ -1,8 +1,9 @@
 import dns from 'dns/promises';
 import type { MxLookupResult } from '../types/index.js';
 import { config } from '../config/env.js';
+import { getRedis } from '../lib/redis.js';
 
-// In-memory cache for MX records
+// In-memory cache fallback
 interface CacheEntry {
   result: MxLookupResult;
   expiresAt: number;
@@ -102,9 +103,23 @@ function recordFailure(): void {
 }
 
 /**
- * Get cached MX result if available and not expired
+ * Get cached MX result (Redis first, then in-memory fallback)
  */
-function getCachedResult(domain: string): MxLookupResult | null {
+async function getCachedResult(domain: string): Promise<MxLookupResult | null> {
+  const redis = getRedis();
+
+  if (redis) {
+    try {
+      const cached = await redis.get(`mx:${domain}`);
+      if (cached) {
+        return { ...JSON.parse(cached), cached: true };
+      }
+      return null;
+    } catch {
+      // Fallback to in-memory
+    }
+  }
+
   const entry = mxCache.get(domain);
   if (!entry) return null;
 
@@ -117,16 +132,26 @@ function getCachedResult(domain: string): MxLookupResult | null {
 }
 
 /**
- * Cache MX result
+ * Cache MX result (Redis + in-memory fallback)
  */
-function cacheResult(domain: string, result: MxLookupResult): void {
+async function cacheResult(domain: string, result: MxLookupResult): Promise<void> {
+  const redis = getRedis();
+
+  if (redis) {
+    try {
+      await redis.set(`mx:${domain}`, JSON.stringify(result), 'EX', config.MX_CACHE_TTL_SECONDS);
+      return;
+    } catch {
+      // Fallback to in-memory
+    }
+  }
+
   const ttl = config.MX_CACHE_TTL_SECONDS * 1000;
   mxCache.set(domain, {
     result,
     expiresAt: Date.now() + ttl,
   });
 
-  // Limit cache size
   if (mxCache.size > 10000) {
     const firstKey = mxCache.keys().next().value;
     if (firstKey) mxCache.delete(firstKey);
@@ -138,7 +163,7 @@ function cacheResult(domain: string, result: MxLookupResult): void {
  */
 export async function lookupMx(domain: string): Promise<MxLookupResult> {
   // Check cache first
-  const cached = getCachedResult(domain);
+  const cached = await getCachedResult(domain);
   if (cached) return cached;
 
   // Check circuit breaker
@@ -176,7 +201,7 @@ export async function lookupMx(domain: string): Promise<MxLookupResult> {
       cached: false,
     };
 
-    cacheResult(domain, result);
+    await cacheResult(domain, result);
     return result;
 
   } catch (error) {

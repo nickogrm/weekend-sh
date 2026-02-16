@@ -1,13 +1,16 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 
 import { config, isDev } from './config/env.js';
 import { qualifyRoutes } from './routes/qualify.js';
 import { healthRoutes } from './routes/health.js';
-import { authHook, initDevApiKeys, isOriginAllowed } from './middleware/auth.js';
+import { authHook, initDevApiKeys } from './middleware/auth.js';
 import { rateLimitHook, startRateLimitCleanup } from './middleware/rateLimit.js';
 import { initializeLists } from './services/listMatcher.js';
+import { getRedis, disconnectRedis } from './lib/redis.js';
 
 // Create Fastify instance with logger
 const fastify = Fastify({
@@ -26,6 +29,7 @@ const fastify = Fastify({
   },
   requestIdHeader: 'x-request-id',
   requestIdLogLabel: 'request_id',
+  bodyLimit: 1_048_576, // 1MB max body size
 });
 
 // Register plugins
@@ -33,6 +37,31 @@ async function registerPlugins(): Promise<void> {
   // Security headers
   await fastify.register(helmet, {
     contentSecurityPolicy: false, // API doesn't serve HTML
+  });
+
+  // Swagger API documentation
+  await fastify.register(swagger, {
+    openapi: {
+      info: {
+        title: 'Email Qualification API',
+        description: 'API for qualifying email addresses as B2B, personal, education, or government',
+        version: '1.0.0',
+      },
+      servers: [{ url: `http://localhost:${config.PORT}` }],
+      components: {
+        securitySchemes: {
+          apiKey: {
+            type: 'apiKey',
+            name: 'X-API-Key',
+            in: 'header',
+          },
+        },
+      },
+    },
+  });
+
+  await fastify.register(swaggerUi, {
+    routePrefix: '/docs',
   });
 
   // CORS configuration
@@ -139,6 +168,13 @@ function registerErrorHandlers(): void {
 // Initialize and start server
 async function start(): Promise<void> {
   try {
+    // Initialize Redis (non-blocking, graceful degradation)
+    fastify.log.info('Connecting to Redis...');
+    const redis = getRedis();
+    if (!redis) {
+      fastify.log.warn('Redis unavailable, running in degraded mode (in-memory only)');
+    }
+
     // Initialize services
     fastify.log.info('Initializing domain lists...');
     initializeLists();
@@ -177,6 +213,7 @@ async function start(): Promise<void> {
 // Graceful shutdown
 async function shutdown(signal: string): Promise<void> {
   fastify.log.info(`Received ${signal}, shutting down gracefully...`);
+  await disconnectRedis();
   await fastify.close();
   process.exit(0);
 }

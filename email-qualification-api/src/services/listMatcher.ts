@@ -1,19 +1,24 @@
+import { readFileSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import type { ListMatchResult, ListVersions, ParsedEmail } from '../types/index.js';
 
-// In-memory storage for lists with hot reload support
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const dataDir = resolve(__dirname, '../data');
+
 interface DomainLists {
   personal: Set<string>;
   disposable: Set<string>;
   education: Set<string>;
   governmentExact: Set<string>;
   governmentPatterns: GovPattern[];
+  educationPatterns: RegExp[];
   versions: ListVersions;
 }
 
 interface GovPattern {
-  pattern: string;       // e.g., "*.gouv.fr"
+  pattern: string;
   regex: RegExp;
-  country?: string;
 }
 
 let lists: DomainLists = {
@@ -22,6 +27,7 @@ let lists: DomainLists = {
   education: new Set(),
   governmentExact: new Set(),
   governmentPatterns: [],
+  educationPatterns: [],
   versions: {
     personal: '0.0.0',
     disposable: '0.0.0',
@@ -30,106 +36,35 @@ let lists: DomainLists = {
   },
 };
 
-// Personal/public email providers (subset - full list in data files)
-const DEFAULT_PERSONAL_PROVIDERS = [
-  'gmail.com', 'googlemail.com',
-  'outlook.com', 'outlook.fr', 'hotmail.com', 'hotmail.fr', 'live.com', 'live.fr', 'msn.com',
-  'yahoo.com', 'yahoo.fr', 'ymail.com', 'rocketmail.com',
-  'protonmail.com', 'proton.me', 'pm.me',
-  'icloud.com', 'me.com', 'mac.com',
-  'aol.com', 'aol.fr',
-  'mail.com', 'email.com',
-  'gmx.com', 'gmx.fr', 'gmx.de',
-  'zoho.com', 'zohomail.com',
-  'yandex.com', 'yandex.ru',
-  'mail.ru', 'inbox.ru', 'list.ru', 'bk.ru',
-  'free.fr', 'orange.fr', 'wanadoo.fr', 'sfr.fr', 'laposte.net', 'bbox.fr',
-  'web.de', 't-online.de',
-  'libero.it', 'virgilio.it', 'alice.it',
-  'qq.com', '163.com', '126.com', 'sina.com',
-  'naver.com', 'daum.net',
-];
-
-// Disposable email domains (subset - full list from external source)
-const DEFAULT_DISPOSABLE_DOMAINS = [
-  'tempmail.com', 'temp-mail.org', 'guerrillamail.com', 'guerrillamail.org',
-  'mailinator.com', 'mailinator.net',
-  'throwaway.email', 'throwawaymail.com',
-  '10minutemail.com', '10minutemail.net',
-  'fakeinbox.com', 'trashmail.com', 'trashmail.net',
-  'getnada.com', 'dispostable.com',
-  'yopmail.com', 'yopmail.fr',
-  'sharklasers.com', 'spam4.me', 'grr.la',
-  'mohmal.com', 'tempail.com', 'emailondeck.com',
-  'maildrop.cc', 'mailnesia.com', 'mintemail.com',
-];
-
-// Education domains (subset - full list from SWOT)
-const DEFAULT_EDUCATION_DOMAINS = [
-  // US
-  'stanford.edu', 'mit.edu', 'harvard.edu', 'berkeley.edu', 'caltech.edu',
-  'yale.edu', 'princeton.edu', 'columbia.edu', 'cornell.edu', 'upenn.edu',
-  // UK
-  'ox.ac.uk', 'cam.ac.uk', 'ucl.ac.uk', 'imperial.ac.uk', 'lse.ac.uk',
-  'ed.ac.uk', 'manchester.ac.uk', 'kcl.ac.uk',
-  // France
-  'polytechnique.edu', 'ens.fr', 'hec.edu',
-  'univ-paris1.fr', 'sorbonne-universite.fr', 'u-paris.fr',
-  // Germany
-  'tum.de', 'lmu.de', 'hu-berlin.de', 'fu-berlin.de',
-  // Generic patterns will be handled by TLD rules
-];
-
-// Government patterns and exact domains
-const DEFAULT_GOV_PATTERNS: GovPattern[] = [
-  // Generic
-  { pattern: '*.gov', regex: /\.gov$/i },
-  { pattern: '*.gov.*', regex: /\.gov\.[a-z]{2,3}$/i },
-  { pattern: '*.gob.*', regex: /\.gob\.[a-z]{2,3}$/i }, // Spanish
-  { pattern: '*.gouv.*', regex: /\.gouv\.[a-z]{2,3}$/i }, // French
-
-  // Specific countries
-  { pattern: '*.gov.uk', regex: /\.gov\.uk$/i, country: 'UK' },
-  { pattern: '*.gov.au', regex: /\.gov\.au$/i, country: 'AU' },
-  { pattern: '*.gov.ca', regex: /\.gc\.ca$/i, country: 'CA' }, // Canada uses gc.ca
-  { pattern: '*.gouv.fr', regex: /\.gouv\.fr$/i, country: 'FR' },
-  { pattern: '*.gov.br', regex: /\.gov\.br$/i, country: 'BR' },
-  { pattern: '*.gob.mx', regex: /\.gob\.mx$/i, country: 'MX' },
-  { pattern: '*.go.jp', regex: /\.go\.jp$/i, country: 'JP' },
-  { pattern: '*.govt.nz', regex: /\.govt\.nz$/i, country: 'NZ' },
-  { pattern: '*.gov.in', regex: /\.gov\.in$/i, country: 'IN' },
-];
-
-const DEFAULT_GOV_EXACT_DOMAINS = [
-  // US
-  'state.gov', 'whitehouse.gov', 'nasa.gov', 'fbi.gov', 'cia.gov',
-  // EU
-  'europa.eu', 'ec.europa.eu',
-  // International orgs (often treated as gov-adjacent)
-  'un.org', 'who.int', 'nato.int', 'oecd.org', 'worldbank.org',
-];
-
-// Education TLD patterns (always edu)
-const EDUCATION_TLD_PATTERNS = [
-  /\.edu$/i,
-  /\.edu\.[a-z]{2}$/i, // .edu.au, .edu.mx, etc.
-  /\.ac\.[a-z]{2}$/i,  // .ac.uk, .ac.jp, etc.
-  /\.edu\.[a-z]{2,3}$/i,
-];
+function loadJsonFile<T>(filename: string): T {
+  const content = readFileSync(resolve(dataDir, filename), 'utf-8');
+  return JSON.parse(content);
+}
 
 /**
- * Initialize lists with default data
- * In production, this would load from files or external sources
+ * Initialize lists from JSON data files
  */
 export function initializeLists(): void {
   const now = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
 
+  const personalDomains = loadJsonFile<string[]>('personal.json');
+  const disposableDomains = loadJsonFile<string[]>('disposable.json');
+  const eduData = loadJsonFile<{ domains: string[]; patterns: string[] }>('education.json');
+  const govData = loadJsonFile<{ domains: string[]; patterns: { pattern: string; regex: string }[] }>('government.json');
+
   lists = {
-    personal: new Set(DEFAULT_PERSONAL_PROVIDERS),
-    disposable: new Set(DEFAULT_DISPOSABLE_DOMAINS),
-    education: new Set(DEFAULT_EDUCATION_DOMAINS),
-    governmentExact: new Set(DEFAULT_GOV_EXACT_DOMAINS),
-    governmentPatterns: DEFAULT_GOV_PATTERNS,
+    personal: new Set(personalDomains),
+    disposable: new Set(disposableDomains),
+    education: new Set(eduData.domains),
+    governmentExact: new Set(govData.domains),
+    governmentPatterns: govData.patterns.map(p => ({
+      pattern: p.pattern,
+      regex: new RegExp(p.regex, 'i'),
+    })),
+    educationPatterns: eduData.patterns.map(p => {
+      const escaped = p.replace(/\./g, '\\.');
+      return new RegExp(`${escaped}$`, 'i');
+    }),
     versions: {
       personal: now,
       disposable: now,
@@ -205,7 +140,7 @@ export function matchEducation(parsed: ParsedEmail): ListMatchResult {
   }
 
   // Check TLD patterns (.edu, .ac.uk, etc.)
-  for (const pattern of EDUCATION_TLD_PATTERNS) {
+  for (const pattern of lists.educationPatterns) {
     if (pattern.test(parsed.domain)) {
       return {
         matched: true,

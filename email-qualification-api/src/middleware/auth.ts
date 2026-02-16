@@ -89,6 +89,11 @@ export async function authHook(
   const keyInfo = getApiKeyInfo(apiKey);
 
   if (!keyInfo) {
+    request.log.warn({
+      event: 'auth_failure',
+      ip: request.ip,
+      key_prefix: apiKey.slice(0, 8) + '...',
+    });
     return reply.status(401).send({
       error: {
         code: 'UNAUTHORIZED',
