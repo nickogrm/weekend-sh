@@ -1,0 +1,25 @@
+version: '3.8'
+
+# Development override
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder  # Use builder stage for dev
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+    command: npm run dev
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Node debugger port
+
+  redis:
+    ports:
+      - "6379:6379"

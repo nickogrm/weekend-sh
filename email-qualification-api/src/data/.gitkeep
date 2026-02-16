@@ -1,0 +1,6 @@
+# Data directory for custom domain lists
+# Place your custom lists here:
+# - custom_personal.txt (one domain per line)
+# - custom_disposable.txt
+# - custom_education.txt
+# - gov_rules.yaml

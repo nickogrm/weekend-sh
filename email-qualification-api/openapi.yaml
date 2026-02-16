@@ -1,0 +1,655 @@
+openapi: 3.0.3
+info:
+  title: Email Qualification API
+  description: |
+    API for qualifying email addresses to identify B2B private leads vs personal/education/government emails.
+
+    ## Authentication
+    All endpoints require an API key passed via the `X-API-Key` header.
+
+    ## Rate Limiting
+    Requests are rate-limited per API key. See response headers for current limits:
+    - `X-RateLimit-Limit`: Maximum requests per window
+    - `X-RateLimit-Remaining`: Remaining requests in current window
+    - `X-RateLimit-Reset`: Unix timestamp when the window resets
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@emailqualify.io
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.emailqualify.io
+    description: Production
+  - url: https://api-staging.emailqualify.io
+    description: Staging
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Qualification
+    description: Email qualification endpoints
+  - name: Health
+    description: Health check endpoints
+
+paths:
+  /v1/qualify-email:
+    post:
+      operationId: qualifyEmail
+      tags: [Qualification]
+      summary: Qualify an email address
+      description: |
+        Analyzes an email address and returns a verdict indicating whether it's a B2B private business email,
+        personal email, disposable, education, or government domain.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QualifyEmailRequest'
+            examples:
+              basic:
+                summary: Basic request
+                value:
+                  email: john.doe@acme-corp.com
+              withContext:
+                summary: Request with context
+                value:
+                  email: john.doe@acme-corp.com
+                  context:
+                    form_id: contact-sales
+                    page_url: https://mysite.com/pricing
+                    campaign: google-ads-q1
+                  options:
+                    enable_mx_check: true
+      responses:
+        '200':
+          description: Email successfully qualified
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+              description: Maximum requests per window
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+              description: Remaining requests in current window
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+              description: Unix timestamp when window resets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualifyEmailResponse'
+              examples:
+                businessEmail:
+                  summary: B2B Private Email
+                  value:
+                    verdict: private_b2b
+                    is_business_email: true
+                    is_private_b2b: true
+                    confidence: 0.92
+                    flags: [mx_google]
+                    reasons:
+                      - Domain not in personal/disposable/edu/gov lists
+                      - Valid MX records found
+                      - Google Workspace detected
+                    domain:
+                      raw: acme-corp.com
+                      registrable: acme-corp.com
+                      tld: com
+                    provider_match: null
+                    metadata:
+                      request_id: req_7f8a9b2c
+                      timestamp: '2024-03-15T10:23:45.123Z'
+                      latency_ms: 87
+                      cache_hit: false
+                      mx_checked: true
+                      mx_records_count: 5
+                      list_versions:
+                        personal: '2024.03.01'
+                        disposable: '2024.03.10'
+                        education: '2024.02.15'
+                        government: '2024.01.20'
+                personalEmail:
+                  summary: Personal Email
+                  value:
+                    verdict: personal
+                    is_business_email: false
+                    is_private_b2b: false
+                    confidence: 0.95
+                    flags: [public_provider]
+                    reasons:
+                      - gmail.com is a known public email provider
+                    domain:
+                      raw: gmail.com
+                      registrable: gmail.com
+                      tld: com
+                    provider_match:
+                      list: public_providers
+                      match_type: exact
+                    metadata:
+                      request_id: req_8c9d0e1f
+                      timestamp: '2024-03-15T10:24:12.456Z'
+                      latency_ms: 12
+                      cache_hit: true
+                      mx_checked: false
+                      mx_records_count: null
+                      list_versions:
+                        personal: '2024.03.01'
+                        disposable: '2024.03.10'
+                        education: '2024.02.15'
+                        government: '2024.01.20'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidEmail:
+                  summary: Invalid email syntax
+                  value:
+                    error:
+                      code: INVALID_EMAIL
+                      message: Invalid email syntax
+                      details:
+                        email: not-an-email
+                    metadata:
+                      request_id: req_abc123
+                      timestamp: '2024-03-15T10:25:00.000Z'
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: UNAUTHORIZED
+                  message: Invalid or missing API key
+                metadata:
+                  request_id: req_def456
+                  timestamp: '2024-03-15T10:26:00.000Z'
+        '429':
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error:
+                  code: RATE_LIMITED
+                  message: Rate limit exceeded
+                  details:
+                    limit: 60
+                    window_seconds: 60
+                    retry_after: 45
+                metadata:
+                  request_id: req_ghi789
+                  timestamp: '2024-03-15T10:27:00.000Z'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/qualify-email/batch:
+    post:
+      operationId: qualifyEmailBatch
+      tags: [Qualification]
+      summary: Qualify multiple email addresses
+      description: |
+        Batch endpoint for qualifying up to 100 email addresses in a single request.
+        Results are returned in the same order as the input.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchQualifyRequest'
+      responses:
+        '200':
+          description: Batch qualification results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchQualifyResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      operationId: healthCheck
+      tags: [Health]
+      summary: Health check
+      description: Returns the health status of the API
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/ready:
+    get:
+      operationId: readinessCheck
+      tags: [Health]
+      summary: Readiness check
+      description: Returns whether the service is ready to accept traffic
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication (format: eq_live_xxx or eq_test_xxx)
+
+  schemas:
+    QualifyEmailRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: The email address to qualify
+          example: john.doe@acme-corp.com
+        context:
+          type: object
+          description: Optional context for analytics and tracking
+          properties:
+            form_id:
+              type: string
+              maxLength: 100
+              description: Identifier of the form where email was captured
+              example: contact-sales
+            page_url:
+              type: string
+              format: uri
+              maxLength: 2000
+              description: URL of the page where the form is displayed
+              example: https://mysite.com/pricing
+            referrer:
+              type: string
+              format: uri
+              maxLength: 2000
+              description: HTTP referrer
+            ip:
+              type: string
+              description: IP address (if server-side)
+            user_agent:
+              type: string
+              maxLength: 500
+              description: User agent string
+            lead_id:
+              type: string
+              maxLength: 100
+              description: External lead identifier
+            campaign:
+              type: string
+              maxLength: 100
+              description: Marketing campaign identifier
+              example: google-ads-q1
+            source:
+              type: string
+              maxLength: 100
+              description: Traffic source
+        options:
+          type: object
+          description: Request options
+          properties:
+            strict_mode:
+              type: boolean
+              default: false
+              description: If true, unknown domains are rejected instead of accepted
+            enable_mx_check:
+              type: boolean
+              default: false
+              description: If true, performs DNS MX lookup (increases latency)
+            store_mode:
+              type: string
+              enum: [none, hash, plain]
+              default: hash
+              description: How to store the email for analytics
+            ttl_days:
+              type: integer
+              minimum: 1
+              maximum: 365
+              default: 90
+              description: Data retention period in days
+
+    QualifyEmailResponse:
+      type: object
+      required:
+        - verdict
+        - is_business_email
+        - is_private_b2b
+        - confidence
+        - flags
+        - reasons
+        - domain
+        - metadata
+      properties:
+        verdict:
+          type: string
+          enum: [private_b2b, education, government, personal, disposable, unknown]
+          description: |
+            The classification verdict:
+            - `private_b2b`: Private business email (ACCEPT)
+            - `education`: Academic/university domain (REJECT)
+            - `government`: Government domain (REJECT)
+            - `personal`: Public email provider (REJECT)
+            - `disposable`: Temporary/disposable email (REJECT)
+            - `unknown`: Could not classify with confidence
+        is_business_email:
+          type: boolean
+          description: True if email appears to be business-related (not personal/disposable)
+        is_private_b2b:
+          type: boolean
+          description: True if email is from a private business (not edu/gov)
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Confidence score for the verdict (0-1)
+        flags:
+          type: array
+          items:
+            type: string
+            enum:
+              - invalid_syntax
+              - public_provider
+              - disposable
+              - edu
+              - gov
+              - no_mx
+              - mx_google
+              - mx_microsoft
+              - mx_timeout
+              - subdomain
+              - plus_addressing
+              - idn
+              - new_domain
+          description: Flags indicating various characteristics of the email
+        reasons:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+          description: Human-readable reasons for the verdict
+        domain:
+          $ref: '#/components/schemas/DomainInfo'
+        provider_match:
+          oneOf:
+            - $ref: '#/components/schemas/ProviderMatch'
+            - type: 'null'
+          description: Details about which list/rule matched, if any
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    DomainInfo:
+      type: object
+      required:
+        - raw
+        - registrable
+        - tld
+      properties:
+        raw:
+          type: string
+          description: The raw domain extracted from the email
+          example: mail.acme-corp.com
+        registrable:
+          type: string
+          description: The registrable domain (eTLD+1)
+          example: acme-corp.com
+        tld:
+          type: string
+          description: The top-level domain or public suffix
+          example: com
+
+    ProviderMatch:
+      type: object
+      required:
+        - list
+        - match_type
+      properties:
+        list:
+          type: string
+          description: Name of the list that matched
+          example: public_providers
+        match_type:
+          type: string
+          enum: [exact, registrable, suffix, tld_pattern]
+          description: How the match was made
+        pattern:
+          type: string
+          description: The pattern that matched (for tld_pattern type)
+          example: '*.gouv.fr'
+
+    ResponseMetadata:
+      type: object
+      required:
+        - request_id
+        - timestamp
+        - latency_ms
+        - cache_hit
+        - mx_checked
+        - list_versions
+      properties:
+        request_id:
+          type: string
+          description: Unique identifier for this request
+          example: req_7f8a9b2c
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of the request
+        latency_ms:
+          type: integer
+          minimum: 0
+          description: Processing time in milliseconds
+        cache_hit:
+          type: boolean
+          description: Whether the result was served from cache
+        mx_checked:
+          type: boolean
+          description: Whether MX lookup was performed
+        mx_records_count:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Number of MX records found (if checked)
+        list_versions:
+          type: object
+          description: Versions of the classification lists used
+          properties:
+            personal:
+              type: string
+            disposable:
+              type: string
+            education:
+              type: string
+            government:
+              type: string
+
+    BatchQualifyRequest:
+      type: object
+      required:
+        - emails
+      properties:
+        emails:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            format: email
+          description: List of email addresses to qualify
+        context:
+          type: object
+          description: Shared context for all emails
+          properties:
+            form_id:
+              type: string
+            campaign:
+              type: string
+            source:
+              type: string
+        options:
+          type: object
+          properties:
+            enable_mx_check:
+              type: boolean
+              default: false
+            store_mode:
+              type: string
+              enum: [none, hash, plain]
+              default: hash
+
+    BatchQualifyResponse:
+      type: object
+      required:
+        - results
+        - metadata
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QualifyEmailResponse'
+        metadata:
+          type: object
+          properties:
+            request_id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            total_count:
+              type: integer
+            latency_ms:
+              type: integer
+            verdicts_summary:
+              type: object
+              additionalProperties:
+                type: integer
+              description: Count of each verdict type
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - metadata
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum:
+                - INVALID_EMAIL
+                - INVALID_REQUEST
+                - UNAUTHORIZED
+                - RATE_LIMITED
+                - INTERNAL_ERROR
+              description: Error code
+            message:
+              type: string
+              description: Human-readable error message
+            details:
+              type: object
+              additionalProperties: true
+              description: Additional error details
+        metadata:
+          type: object
+          properties:
+            request_id:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        version:
+          type: string
+        uptime_seconds:
+          type: integer
+
+    ReadinessResponse:
+      type: object
+      required:
+        - ready
+      properties:
+        ready:
+          type: boolean
+        checks:
+          type: object
+          properties:
+            redis:
+              type: string
+              enum: [ok, error]
+            lists_loaded:
+              type: string
+              enum: [ok, error]

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>lemlist - Email personalization at scale</title>
+  <style>
+    /* Reset et styles de base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #5B5FFE 0%, #7B7FFF 100%);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .nav {
+      display: flex;
+      gap: 30px;
+    }
+
+    .nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+    }
+
+    .nav a:hover {
+      opacity: 1;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #f8f9ff 0%, #e8e9ff 100%);
+      padding: 80px 40px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      color: #1a1a2e;
+      margin-bottom: 20px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero p {
+      font-size: 20px;
+      color: #666;
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+
+    .cta-button {
+      background: #5B5FFE;
+      color: white;
+      padding: 16px 40px;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(91, 95, 254, 0.4);
+    }
+
+    /* Features Section */
+    .features {
+      padding: 80px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .features h2 {
+      text-align: center;
+      font-size: 36px;
+      margin-bottom: 60px;
+      color: #1a1a2e;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+    }
+
+    .feature-card {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #5B5FFE 0%, #7B7FFF 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 22px;
+      margin-bottom: 12px;
+      color: #1a1a2e;
+    }
+
+    .feature-card p {
+      color: #666;
+      font-size: 16px;
+    }
+
+    /* Stats Section */
+    .stats {
+      background: #5B5FFE;
+      padding: 60px 40px;
+      color: white;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 40px;
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .stat-item h3 {
+      font-size: 48px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .stat-item p {
+      opacity: 0.9;
+      font-size: 16px;
+    }
+
+    /* How it works Section */
+    .how-it-works {
+      padding: 80px 40px;
+      background: #f8f9ff;
+    }
+
+    .how-it-works h2 {
+      text-align: center;
+      font-size: 36px;
+      margin-bottom: 60px;
+      color: #1a1a2e;
+    }
+
+    .steps {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      max-width: 1000px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+    }
+
+    .step {
+      text-align: center;
+      max-width: 250px;
+    }
+
+    .step-number {
+      width: 50px;
+      height: 50px;
+      background: #5B5FFE;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 0 auto 20px;
+    }
+
+    .step h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #1a1a2e;
+    }
+
+    .step p {
+      color: #666;
+      font-size: 15px;
+    }
+
+    /* Pricing Section */
+    .pricing {
+      padding: 80px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .pricing h2 {
+      text-align: center;
+      font-size: 36px;
+      margin-bottom: 20px;
+      color: #1a1a2e;
+    }
+
+    .pricing > p {
+      text-align: center;
+      color: #666;
+      margin-bottom: 60px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+    }
+
+    .pricing-card {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      text-align: center;
+    }
+
+    .pricing-card.popular {
+      border: 2px solid #5B5FFE;
+      position: relative;
+    }
+
+    .popular-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #5B5FFE;
+      color: white;
+      padding: 4px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .pricing-card h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #1a1a2e;
+    }
+
+    .price {
+      font-size: 48px;
+      font-weight: bold;
+      color: #5B5FFE;
+      margin-bottom: 20px;
+    }
+
+    .price span {
+      font-size: 16px;
+      color: #666;
+      font-weight: normal;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 30px;
+    }
+
+    .pricing-features li {
+      padding: 10px 0;
+      color: #666;
+      border-bottom: 1px solid #eee;
+    }
+
+    .pricing-features li:last-child {
+      border-bottom: none;
+    }
+
+    /* Testimonials Section */
+    .testimonials {
+      padding: 80px 40px;
+      background: linear-gradient(135deg, #f8f9ff 0%, #e8e9ff 100%);
+    }
+
+    .testimonials h2 {
+      text-align: center;
+      font-size: 36px;
+      margin-bottom: 60px;
+      color: #1a1a2e;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .testimonial-card {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .testimonial-text {
+      font-style: italic;
+      color: #555;
+      margin-bottom: 20px;
+      font-size: 15px;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .author-avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #5B5FFE 0%, #7B7FFF 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    .author-info h4 {
+      font-size: 16px;
+      color: #1a1a2e;
+    }
+
+    .author-info p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Footer */
+    .footer {
+      background: #1a1a2e;
+      padding: 60px 40px 30px;
+      color: white;
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      max-width: 1200px;
+      margin: 0 auto 40px;
+    }
+
+    .footer-section h4 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #5B5FFE;
+    }
+
+    .footer-section ul {
+      list-style: none;
+    }
+
+    .footer-section li {
+      margin-bottom: 10px;
+    }
+
+    .footer-section a {
+      color: #aaa;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 30px;
+      border-top: 1px solid #333;
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .nav {
+        display: none;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="chat-popup.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">lemlist</div>
+    <nav class="nav">
+      <a href="#">Produit</a>
+      <a href="#">Prix</a>
+      <a href="#">Ressources</a>
+      <a href="#">Blog</a>
+      <a href="#">Connexion</a>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>Personnalisez vos emails à grande échelle avec l'IA</h1>
+    <p>lemlist est la plateforme d'outreach qui vous aide à atteindre vos prospects avec des emails personnalisés et des séquences multicanales automatisées.</p>
+    <button class="cta-button">Commencer gratuitement</button>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <h2>Tout ce dont vous avez besoin pour convertir plus de leads</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">✉️</div>
+        <h3>Personnalisation avancée</h3>
+        <p>Créez des emails uniques pour chaque prospect grâce à nos variables dynamiques, images personnalisées et texte généré par IA. Augmentez vos taux d'ouverture de 3x.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Séquences multicanales</h3>
+        <p>Combinez emails, LinkedIn, appels téléphoniques et plus encore dans des séquences automatisées. Touchez vos prospects là où ils sont le plus réceptifs.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Analytics détaillés</h3>
+        <p>Suivez chaque interaction avec vos prospects : ouvertures, clics, réponses. Identifiez ce qui fonctionne et optimisez vos campagnes en temps réel.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>IA pour la rédaction</h3>
+        <p>Notre IA vous aide à rédiger des emails percutants en quelques secondes. Générez des variantes, traduisez automatiquement et adaptez le ton à votre audience.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Lead scoring intelligent</h3>
+        <p>Priorisez automatiquement vos prospects les plus chauds grâce à notre système de scoring basé sur le comportement et les signaux d'intention d'achat.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h3>Intégrations natives</h3>
+        <p>Connectez lemlist à vos outils préférés : Salesforce, HubSpot, Pipedrive, Zapier et plus de 50 autres intégrations disponibles.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <h3>37K+</h3>
+        <p>Utilisateurs actifs</p>
+      </div>
+      <div class="stat-item">
+        <h3>450M+</h3>
+        <p>Emails envoyés</p>
+      </div>
+      <div class="stat-item">
+        <h3>3.5x</h3>
+        <p>Taux de réponse moyen</p>
+      </div>
+      <div class="stat-item">
+        <h3>4.8/5</h3>
+        <p>Note G2 Crowd</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works Section -->
+  <section class="how-it-works">
+    <h2>Comment ça marche ?</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Importez vos prospects</h3>
+        <p>Uploadez votre liste de contacts ou utilisez notre outil de recherche intégré pour trouver des leads qualifiés.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Créez votre séquence</h3>
+        <p>Designez vos emails avec notre éditeur drag-and-drop et configurez votre séquence multicanale.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Personnalisez en masse</h3>
+        <p>Utilisez nos outils d'IA et variables dynamiques pour personnaliser chaque message automatiquement.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">4</div>
+        <h3>Analysez et optimisez</h3>
+        <p>Suivez vos performances en temps réel et ajustez votre stratégie pour maximiser vos conversions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section class="pricing">
+    <h2>Des plans adaptés à tous les besoins</h2>
+    <p>Commencez gratuitement, évoluez à votre rythme</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Starter</h3>
+        <div class="price">29€<span>/mois</span></div>
+        <ul class="pricing-features">
+          <li>1 boîte email connectée</li>
+          <li>100 emails/jour</li>
+          <li>Personnalisation basique</li>
+          <li>Support email</li>
+        </ul>
+        <button class="cta-button">Essayer gratuitement</button>
+      </div>
+      <div class="pricing-card popular">
+        <span class="popular-badge">Le plus populaire</span>
+        <h3>Pro</h3>
+        <div class="price">59€<span>/mois</span></div>
+        <ul class="pricing-features">
+          <li>3 boîtes email connectées</li>
+          <li>Emails illimités</li>
+          <li>IA pour la rédaction</li>
+          <li>Séquences multicanales</li>
+          <li>Support prioritaire</li>
+        </ul>
+        <button class="cta-button">Essayer gratuitement</button>
+      </div>
+      <div class="pricing-card">
+        <h3>Enterprise</h3>
+        <div class="price">Sur mesure</div>
+        <ul class="pricing-features">
+          <li>Boîtes email illimitées</li>
+          <li>API access</li>
+          <li>SSO & SAML</li>
+          <li>Account manager dédié</li>
+          <li>SLA personnalisé</li>
+        </ul>
+        <button class="cta-button">Nous contacter</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials">
+    <h2>Ce que nos clients disent</h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <p class="testimonial-text">"lemlist a transformé notre approche commerciale. Nos taux de réponse ont augmenté de 300% en seulement 2 mois. L'IA pour la personnalisation est un game-changer."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">MG</div>
+          <div class="author-info">
+            <h4>Marie Germain</h4>
+            <p>Head of Sales, TechStartup</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">"L'interface est intuitive et les résultats sont au rendez-vous. On a signé 15 nouveaux clients le premier mois grâce aux séquences multicanales."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">PD</div>
+          <div class="author-info">
+            <h4>Pierre Dubois</h4>
+            <p>CEO, AgencyPro</p>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">"Le meilleur outil d'outreach que j'ai utilisé. La personnalisation des images directement dans les emails fait vraiment la différence."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">SL</div>
+          <div class="author-info">
+            <h4>Sophie Laurent</h4>
+            <p>Growth Manager, ScaleUp</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Produit</h4>
+        <ul>
+          <li><a href="#">Fonctionnalités</a></li>
+          <li><a href="#">Intégrations</a></li>
+          <li><a href="#">Prix</a></li>
+          <li><a href="#">Changelog</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Ressources</h4>
+        <ul>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Templates</a></li>
+          <li><a href="#">Guides</a></li>
+          <li><a href="#">API Docs</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Entreprise</h4>
+        <ul>
+          <li><a href="#">À propos</a></li>
+          <li><a href="#">Carrières</a></li>
+          <li><a href="#">Presse</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Légal</h4>
+        <ul>
+          <li><a href="#">Confidentialité</a></li>
+          <li><a href="#">CGU</a></li>
+          <li><a href="#">RGPD</a></li>
+          <li><a href="#">Sécurité</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2024 lemlist. Tous droits réservés. Made with 💜 in Paris</p>
+    </div>
+  </footer>
+
+  <!-- Chat Popup Script -->
+  <script src="chat-popup.js"></script>
+</body>
+</html>
