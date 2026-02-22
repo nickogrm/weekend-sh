@@ -1,0 +1,199 @@
+/* Google Fonts — must precede @tailwind directives */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design tokens ─────────────────────────────────────────────── */
+:root {
+  --bg-base:    #0a0a0f;
+  --bg-surface: #0f0f1a;
+  --bg-panel:   #141428;
+  --bg-card:    #1a1a2e;
+  --bg-input:   #0d0d1f;
+
+  --border-dim:   rgba(30, 32, 64, 0.8);
+  --border-glass: rgba(255, 255, 255, 0.06);
+  --border-neon:  rgba(0, 245, 255, 0.3);
+
+  --neon-cyan:   #00f5ff;
+  --neon-blue:   #0080ff;
+  --neon-purple: #8b5cf6;
+  --neon-green:  #00ff88;
+  --neon-red:    #ff4466;
+  --neon-amber:  #ffaa00;
+
+  --text-primary:   #f0f0ff;
+  --text-secondary: #8888aa;
+  --text-muted:     #444466;
+
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-sans:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+}
+
+/* ─── Base reset ────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+}
+
+/* Allow text selection in inputs and content areas */
+input, textarea, [contenteditable] {
+  user-select: text;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(30,32,64,0.9); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,128,255,0.3); }
+
+/* ─── Typography ────────────────────────────────────────────────── */
+.font-display { font-family: var(--font-display); }
+.font-mono    { font-family: var(--font-mono); }
+
+/* ─── Field label ───────────────────────────────────────────────── */
+.field-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+/* ─── Neon input ────────────────────────────────────────────────── */
+.neon-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-dim);
+  border-radius: 10px;
+  color: var(--text-primary);
+  padding: 11px 14px;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.neon-input:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 0 3px rgba(0, 245, 255, 0.08),
+              inset 0 0 12px rgba(0, 245, 255, 0.03);
+}
+
+.neon-input::placeholder {
+  color: rgba(68, 68, 102, 0.7);
+}
+
+.neon-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Select arrow */
+select.neon-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23444466' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+select.neon-input option {
+  background: #141428;
+  color: #f0f0ff;
+}
+
+/* Date input */
+input[type="date"].neon-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.5) sepia(1) hue-rotate(180deg) brightness(1.5);
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+/* Range input */
+input[type="range"] {
+  -webkit-appearance: none;
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--neon-blue);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0,128,255,0.5);
+}
+
+/* ─── Waveform animation ────────────────────────────────────────── */
+@keyframes waveform {
+  0%, 100% {
+    transform: scaleY(0.2);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* ─── Blink animation ───────────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.15; }
+}
+
+/* ─── Fade in up ────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.35s ease-out both;
+}
+
+/* ─── Progress bar glow pulse ───────────────────────────────────── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(0,245,255,0.4); }
+  50%       { box-shadow: 0 0 20px rgba(0,245,255,0.9); }
+}
+
+/* ─── Drag region helper ────────────────────────────────────────── */
+.-webkit-app-region-drag {
+  -webkit-app-region: drag;
+}
+.-webkit-app-region-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* ─── Dot grid background decoration ───────────────────────────── */
+.dot-grid {
+  background-image: radial-gradient(rgba(30, 32, 64, 0.6) 1px, transparent 1px);
+  background-size: 24px 24px;
+}

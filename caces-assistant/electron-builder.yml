@@ -1,0 +1,30 @@
+appId: com.cacesassistant.app
+productName: CACES Assistant
+copyright: Copyright © 2025
+
+directories:
+  output: release
+
+files:
+  - out/**/*
+  - assets/**/*
+  - prompts/**/*
+  - "!**/.vscode/*"
+  - "!src/*"
+
+mac:
+  category: public.app-category.productivity
+  icon: assets/icon.icns
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: assets/entitlements.mac.plist
+  entitlementsInherit: assets/entitlements.mac.plist
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+
+extraResources:
+  - from: node_modules/ffmpeg-static/ffmpeg
+    to: ffmpeg
+
+npmRebuild: true
